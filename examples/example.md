@@ -106,7 +106,3 @@ Code blocks are supported:
 def hello_world():
     print("Hello, world!")
 ```
-
----
-
-The footer of each page should show "Copyright This 2025" as specified in the template.
