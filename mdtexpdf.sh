@@ -30,6 +30,140 @@ check_latex_package() {
     fi
 }
 
+# Function to create a template.tex file
+create_template_file() {
+    local template_path="$1"
+    local footer_text="$2"
+    
+    cat > "$template_path" << EOF
+\\documentclass[12pt]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[T1]{fontenc}  % Better font encoding for special characters
+\\usepackage{textcomp}     % Provides additional text symbols
+\\usepackage{geometry}
+\\usepackage{fancyhdr}
+\\usepackage{graphicx}
+\\usepackage{amsmath}
+\\usepackage{amssymb}
+\\usepackage{hyperref}
+\\usepackage{xcolor}
+\\usepackage{booktabs}
+\\usepackage{longtable}
+\\usepackage{amsthm}
+\\usepackage{fancyvrb}
+\\usepackage{framed}
+\\usepackage{listings}
+\\usepackage{array}
+\\usepackage{enumitem}
+\\usepackage{etoolbox}
+\\usepackage{float}
+\\usepackage{lmodern}
+\\usepackage{textcomp}
+\\usepackage{upquote}
+\\usepackage{microtype}
+
+% Optional packages - check if available
+\\IfFileExists{mhchem.sty}{
+  \\usepackage[version=4]{mhchem}
+}{}
+
+% Set page geometry
+\\geometry{a4paper, margin=1in}
+
+% Setup fancy headers and footers
+\\pagestyle{fancy}
+\\fancyhf{} % Clear all header and footer fields
+% Footer text: "$footer_text"
+\\fancyfoot[C]{$footer_text} % Add custom footer to center
+\\renewcommand{\\footrulewidth}{0.4pt} % Add footer rule
+\\renewcommand{\\headrulewidth}{0pt} % Remove header rule
+
+% Define \\tightlist command used by pandoc
+\\providecommand{\\tightlist}{%
+  \\setlength{\\itemsep}{0pt}\\setlength{\\parskip}{0pt}}
+
+% Define theorem environments
+\\newtheorem{theorem}{Theorem}
+\\newtheorem{lemma}{Lemma}
+\\newtheorem{corollary}{Corollary}
+\\newtheorem{definition}{Definition}
+
+% Define Pandoc's code highlighting environments
+\\definecolor{shadecolor}{RGB}{248,248,248}
+\\newenvironment{Shaded}{\\begin{snugshade}}{\end{snugshade}}
+\\newenvironment{Highlighting}{}{}
+\\newcommand{\\HighlightingOn}{}
+\\newcommand{\\HighlightingOff}{}
+\\newcommand{\\KeywordTok}[1]{\\textcolor[rgb]{0.13,0.29,0.53}{\\textbf{#1}}}
+\\newcommand{\\DataTypeTok}[1]{\\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\\newcommand{\\DecValTok}[1]{\\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\\newcommand{\\BaseNTok}[1]{\\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\\newcommand{\\FloatTok}[1]{\\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\\newcommand{\\ConstantTok}[1]{\\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\\newcommand{\\CharTok}[1]{\\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\\newcommand{\\SpecialCharTok}[1]{\\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\\newcommand{\\StringTok}[1]{\\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\\newcommand{\\VerbatimStringTok}[1]{\\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\\newcommand{\\SpecialStringTok}[1]{\\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\\newcommand{\\ImportTok}[1]{#1}
+\\newcommand{\\CommentTok}[1]{\\textcolor[rgb]{0.56,0.35,0.01}{\\textit{#1}}}
+\\newcommand{\\DocumentationTok}[1]{\\textcolor[rgb]{0.56,0.35,0.01}{\\textit{#1}}}
+\\newcommand{\\AnnotationTok}[1]{\\textcolor[rgb]{0.56,0.35,0.01}{\\textbf{\\textit{#1}}}}
+\\newcommand{\\CommentVarTok}[1]{\\textcolor[rgb]{0.56,0.35,0.01}{\\textbf{\\textit{#1}}}}
+\\newcommand{\\OtherTok}[1]{\\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\\newcommand{\\FunctionTok}[1]{\\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\\newcommand{\\VariableTok}[1]{\\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\\newcommand{\\ControlFlowTok}[1]{\\textcolor[rgb]{0.13,0.29,0.53}{\\textbf{#1}}}
+\\newcommand{\\OperatorTok}[1]{\\textcolor[rgb]{0.81,0.36,0.00}{\\textbf{#1}}}
+\\newcommand{\\BuiltInTok}[1]{#1}
+\\newcommand{\\ExtensionTok}[1]{#1}
+\\newcommand{\\PreprocessorTok}[1]{\\textcolor[rgb]{0.56,0.35,0.01}{\\textit{#1}}}
+\\newcommand{\\AttributeTok}[1]{\\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\\newcommand{\\RegionMarkerTok}[1]{#1}
+\\newcommand{\\InformationTok}[1]{\\textcolor[rgb]{0.56,0.35,0.01}{\\textbf{\\textit{#1}}}}
+\\newcommand{\\WarningTok}[1]{\\textcolor[rgb]{0.56,0.35,0.01}{\\textbf{\\textit{#1}}}}
+\\newcommand{\\AlertTok}[1]{\\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\\newcommand{\\ErrorTok}[1]{\\textcolor[rgb]{0.64,0.00,0.00}{\\textbf{#1}}}
+\\newcommand{\\NormalTok}[1]{#1}
+
+% Title information from YAML frontmatter
+\$if(title)\$
+\\title{\$title\$}
+\$endif\$
+\$if(author)\$
+\\author{\$author\$}
+\$endif\$
+\$if(date)\$
+\\date{\$date\$}
+\$else\$
+\\date{\\today}
+\$endif\$
+
+% Hyperref setup
+\\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  filecolor=magenta,
+  urlcolor=cyan,
+  pdftitle={\$if(title)\$\$title\$\$endif\$},
+  pdfauthor={\$if(author)\$\$author\$\$endif\$},
+  pdfborder={0 0 0}
+}
+
+\\begin{document}
+
+\$if(title)\$
+\\maketitle
+\$endif\$
+
+\$body\$
+
+\\end{document}
+EOF
+
+    return $?
+}
+
 # Function to check prerequisites
 check_prerequisites() {
     echo -e "${YELLOW}=== LaTeX-Markdown PDF Generator Prerequisites Check ===${NC}"
@@ -147,29 +281,140 @@ convert() {
     # No additional options needed for pdflatex
     PANDOC_OPTS=""
 
-    # Check for template.tex in various locations
-    TEMPLATE_PATH="template.tex"
-    if [ ! -f "$TEMPLATE_PATH" ]; then
-        # Check in templates directory
-        if [ -f "templates/template.tex" ]; then
-            TEMPLATE_PATH="templates/template.tex"
+    # Check for template.tex in the current directory first (highest priority)
+    TEMPLATE_IN_CURRENT_DIR=false
+    TEMPLATE_PATH="$(pwd)/template.tex"
+    
+    if [ -f "$TEMPLATE_PATH" ]; then
+        TEMPLATE_IN_CURRENT_DIR=true
+    else
+        # Not found in current directory, check other locations
+        TEMPLATE_PATH=""
+        
+        # Check in templates subdirectory
+        if [ -f "$(pwd)/templates/template.tex" ]; then
+            TEMPLATE_PATH="$(pwd)/templates/template.tex"
+        # Check in script directory
+        elif [ -f "$(dirname "$(readlink -f "$0")")/templates/template.tex" ]; then
+            TEMPLATE_PATH="$(dirname "$(readlink -f "$0")")/templates/template.tex"
+        elif [ -f "$(dirname "$(readlink -f "$0")")/template.tex" ]; then
+            TEMPLATE_PATH="$(dirname "$(readlink -f "$0")")/template.tex"
+        # Check in system directory
+        elif [ -f "/usr/local/share/mdtexpdf/templates/template.tex" ]; then
+            TEMPLATE_PATH="/usr/local/share/mdtexpdf/templates/template.tex"
+        fi
+    fi
+    
+    # Debug output to show which template is being used
+    echo -e "${BLUE}Debug: Template path is $TEMPLATE_PATH${NC}"
+    echo -e "${BLUE}Debug: Template in current dir: $TEMPLATE_IN_CURRENT_DIR${NC}"
+    
+    # Check if we found a template in the current directory
+    if [ "$TEMPLATE_IN_CURRENT_DIR" = true ]; then
+        echo -e "Using template: ${GREEN}$TEMPLATE_PATH${NC}"
+    else
+        # Template not found in current directory
+        if [ -n "$TEMPLATE_PATH" ]; then
+            # Template found in another location
+            echo -e "${YELLOW}No template.tex found in current directory.${NC}"
+            echo -e "${GREEN}Do you want to create a template.tex now and update your file with the proper header? (y/n) [y]:${NC}"
         else
-            # Check if template exists in the installation directory
-            SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-            if [ -f "$SCRIPT_DIR/templates/template.tex" ]; then
-                TEMPLATE_PATH="$SCRIPT_DIR/templates/template.tex"
-            elif [ -f "$SCRIPT_DIR/template.tex" ]; then
-                TEMPLATE_PATH="$SCRIPT_DIR/template.tex"
-            elif [ -f "/usr/local/share/mdtexpdf/template.tex" ]; then
-                TEMPLATE_PATH="/usr/local/share/mdtexpdf/template.tex"
+            # No template found anywhere
+            echo -e "${YELLOW}No template.tex found.${NC}"
+            echo -e "${GREEN}A template.tex file is required. Create one now? (y/n) [y]:${NC}"
+        fi
+        
+        read CREATE_TEMPLATE
+        CREATE_TEMPLATE=${CREATE_TEMPLATE:-"y"}
+        
+        echo -e "${BLUE}Debug: User chose to create template: $CREATE_TEMPLATE${NC}"
+        
+        # Create template if user chose to
+        if [[ $CREATE_TEMPLATE =~ ^[Yy]$ ]]; then
+            echo -e "${BLUE}Debug: Creating template...${NC}"
+            # Get document details for both template and YAML frontmatter
+            echo -e "${YELLOW}Setting up document preferences...${NC}"
+            
+            # Get title from filename or ask user
+            DEFAULT_TITLE=$(basename "$INPUT_FILE" .md | sed 's/_/ /g' | sed 's/-/ /g' | sed 's/\b\(.\)/\u\1/g')
+            echo -e "${GREEN}Enter document title [${DEFAULT_TITLE}]:${NC}"
+            read TITLE
+            TITLE=${TITLE:-"$DEFAULT_TITLE"}
+            
+            # Get author name
+            echo -e "${GREEN}Enter author name [$(whoami)]:${NC}"
+            read AUTHOR
+            AUTHOR=${AUTHOR:-"$(whoami)"}
+            
+            # Get document date
+            echo -e "${GREEN}Enter document date [$(date +"%B %d, %Y")]:${NC}"
+            read DOC_DATE
+            DOC_DATE=${DOC_DATE:-"$(date +"%B %d, %Y")"}
+            
+            # Ask about footer preferences
+            echo -e "${GREEN}Do you want to add a footer to your document? (y/n) [y]:${NC}"
+            read ADD_FOOTER
+            ADD_FOOTER=${ADD_FOOTER:-"y"}
+            
+            if [[ $ADD_FOOTER =~ ^[Yy]$ ]]; then
+                echo -e "${GREEN}Enter footer text (press Enter for default '© All rights reserved $(date +"%Y")'):${NC}"
+                read FOOTER_TEXT
+                FOOTER_TEXT=${FOOTER_TEXT:-"© All rights reserved $(date +"%Y")"}
             else
-                echo -e "${RED}Error: template.tex not found in any of the expected locations.${NC}"
+                FOOTER_TEXT=""
+            fi
+            
+            # Create a template file in the current directory
+            TEMPLATE_PATH="$(pwd)/template.tex"
+            echo -e "${YELLOW}Creating template file: $TEMPLATE_PATH${NC}"
+            create_template_file "$TEMPLATE_PATH" "$FOOTER_TEXT"
+            
+            if [ ! -f "$TEMPLATE_PATH" ]; then
+                echo -e "${RED}Error: Failed to create template.tex.${NC}"
+                return 1
+            fi
+            
+            echo -e "${GREEN}Created new template file: $TEMPLATE_PATH${NC}"
+            
+            # Check if the Markdown file has proper YAML frontmatter
+            if ! grep -q "^---" "$INPUT_FILE"; then
+                echo -e "${YELLOW}Updating $INPUT_FILE with proper YAML frontmatter...${NC}"
+                
+                # Create a temporary file with the YAML frontmatter
+                TMP_FILE=$(mktemp)
+                
+                # Add YAML frontmatter
+                cat > "$TMP_FILE" << EOF
+---
+title: "$TITLE"
+author: "$AUTHOR"
+date: "$DOC_DATE"
+output:
+  pdf_document:
+    template: template.tex
+---
+
+EOF
+                
+                # Append the original content
+                cat "$INPUT_FILE" >> "$TMP_FILE"
+                
+                # Replace the original file
+                mv "$TMP_FILE" "$INPUT_FILE"
+                
+                echo -e "${GREEN}Updated $INPUT_FILE with proper YAML frontmatter.${NC}"
+            fi
+        else
+            # User chose not to create a template
+            if [ -n "$TEMPLATE_PATH" ]; then
+                # Use the template from another location
+                echo -e "Using template: ${GREEN}$TEMPLATE_PATH${NC}"
+            else
+                echo -e "${RED}Cannot proceed without a template.${NC}"
                 return 1
             fi
         fi
     fi
-    
-    echo -e "Using template: ${GREEN}$TEMPLATE_PATH${NC}"
 
     # Run pandoc with the selected PDF engine
     pandoc "$INPUT_FILE" \
@@ -202,8 +447,6 @@ create() {
     fi
 
     OUTPUT_FILE="$1"
-    TITLE="${2:-My Document}"
-    AUTHOR="${3:-Your Name}"
     
     if [ -f "$OUTPUT_FILE" ]; then
         echo -e "${RED}Error: File '$OUTPUT_FILE' already exists.${NC}"
@@ -213,12 +456,63 @@ create() {
 
     echo -e "${YELLOW}Creating new markdown document: $OUTPUT_FILE${NC}"
     
+    # Interactive mode - ask for document details
+    if [ -z "$2" ]; then
+        echo -e "${GREEN}Enter document title:${NC}"
+        read TITLE
+        TITLE=${TITLE:-"My Document"}
+    else
+        TITLE="$2"
+    fi
+    
+    if [ -z "$3" ]; then
+        echo -e "${GREEN}Enter author name:${NC}"
+        read AUTHOR
+        AUTHOR=${AUTHOR:-"$(whoami)"}
+    else
+        AUTHOR="$3"
+    fi
+    
+    echo -e "${GREEN}Enter document date [$(date +"%B %d, %Y")]:${NC}"
+    read DOC_DATE
+    DOC_DATE=${DOC_DATE:-"$(date +"%B %d, %Y")"}
+    
+    # Always ask about footer preferences
+    echo -e "${GREEN}Do you want to add a footer to your document? (y/n) [y]:${NC}"
+    read ADD_FOOTER
+    ADD_FOOTER=${ADD_FOOTER:-"y"}
+    
+    if [[ $ADD_FOOTER =~ ^[Yy]$ ]]; then
+        echo -e "${GREEN}Enter footer text (press Enter for default '© All rights reserved $(date +"%Y")'):${NC}"
+        read FOOTER_TEXT
+        FOOTER_TEXT=${FOOTER_TEXT:-"© All rights reserved $(date +"%Y")"}
+    else
+        FOOTER_TEXT=""
+    fi
+    
+    # Always create a new template.tex in the current directory
+    TEMPLATE_PATH="$(pwd)/template.tex"
+    echo -e "${YELLOW}Creating template file: $TEMPLATE_PATH${NC}"
+    
+    # Create the template file
+    create_template_file "$TEMPLATE_PATH" "$FOOTER_TEXT"
+    
+    if [ ! -f "$TEMPLATE_PATH" ]; then
+        echo -e "${RED}Error: Failed to create template.tex.${NC}"
+        return 1
+    fi
+    
+    echo -e "${GREEN}Created new template file: $TEMPLATE_PATH${NC}"
+    
+    # Debug output to show which template is being used
+    echo -e "${BLUE}Debug: Template path is $TEMPLATE_PATH${NC}"
+    
     # Create the markdown file with YAML frontmatter and example content
     cat > "$OUTPUT_FILE" << EOF
 ---
 title: "$TITLE"
 author: "$AUTHOR"
-date: "$(date +"%B %d, %Y")"
+date: "$DOC_DATE"
 output:
   pdf_document:
     template: template.tex
@@ -265,8 +559,6 @@ def hello_world():
 \`\`\`
 
 ---
-
-The footer of each page will show "Copyright This 2025" as specified in the template.
 EOF
 
     if [ $? -eq 0 ]; then

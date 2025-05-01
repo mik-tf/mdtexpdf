@@ -99,25 +99,41 @@ Convert a Markdown file to PDF:
 mdtexpdf convert document.md
 ```
 
+The tool will automatically:
+- Check for all prerequisites
+- Find or create a template.tex file (prompting for customization if needed)
+- Convert the Markdown to a beautifully formatted PDF
+
 Specify an output filename:
 
 ```bash
 mdtexpdf convert document.md output.pdf
 ```
 
+You can run this command from any directory - the tool will intelligently search for templates in standard locations or create one if needed.
+
 ### Creating New Markdown Documents
 
-Create a new Markdown document with LaTeX template:
+Create a new Markdown document with LaTeX template (interactive mode):
 
 ```bash
 mdtexpdf create document.md
 ```
 
-Specify title and author:
+This will prompt you for:
+- Document title
+- Author name
+- Document date
+- Whether you want a footer (if a template doesn't exist)
+- Custom footer text or use the default "© All rights reserved [YEAR]"
+
+You can also specify title and author directly:
 
 ```bash
 mdtexpdf create document.md "My Document Title" "Author Name"
 ```
+
+The tool will automatically create a template.tex file if one doesn't exist, prompting you for customization options like the footer text.
 
 ### LaTeX Math Support
 
@@ -130,10 +146,15 @@ mdtexpdf supports LaTeX math equations in your Markdown files:
 
 You can modify the LaTeX template (`template.tex`) to:
 
-- Change the footer text
+- Add, remove, or change the footer text
 - Adjust page margins and layout
 - Add additional LaTeX packages
 - Customize the document style
+
+When creating a new document or converting an existing one, if no template is found, the tool will:
+1. Ask if you want to include a footer
+2. Let you specify custom footer text or use the default "© All rights reserved [YEAR]"
+3. Create a template with your preferences
 
 ## Examples
 
