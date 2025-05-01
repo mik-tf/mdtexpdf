@@ -34,6 +34,12 @@ check_latex_package() {
 create_template_file() {
     local template_path="$1"
     local footer_text="$2"
+    local doc_title="$3"
+    local doc_author="$4"
+    
+    # Use default values if not provided
+    doc_title=${doc_title:-"Title"}
+    doc_author=${doc_author:-"Author"}
     
     cat > "$template_path" << EOF
 \\documentclass[12pt]{article}
@@ -54,11 +60,9 @@ create_template_file() {
 \\pagestyle{fancy}
 \\fancyhf{} % Clear all header and footer fields
 
-% Header with author and title (from second page onward)
-\\makeatletter
-\\fancyhead[L]{\\small\\textit{\\@author}}
-\\fancyhead[R]{\\small\\textit{\\@title}}
-\\makeatother
+% Header with document author and title (only on pages after the first)
+\\fancyhead[L]{\\small\\textit{$doc_author}}
+\\fancyhead[R]{\\small\\textit{$doc_title}}
 \\renewcommand{\\headrulewidth}{0.4pt}
 
 % Footer with custom text and page number
@@ -66,7 +70,7 @@ create_template_file() {
 \\fancyfoot[R]{\\thepage}
 \\renewcommand{\\footrulewidth}{0.4pt}
 
-% First page style
+% First page style (no header)
 \\fancypagestyle{plain}{
   \\fancyhf{}
   \\fancyfoot[C]{$footer_text}
@@ -384,7 +388,7 @@ convert() {
             # Create a template file in the current directory
             TEMPLATE_PATH="$(pwd)/template.tex"
             echo -e "${YELLOW}Creating template file: $TEMPLATE_PATH${NC}"
-            create_template_file "$TEMPLATE_PATH" "$FOOTER_TEXT"
+            create_template_file "$TEMPLATE_PATH" "$FOOTER_TEXT" "$TITLE" "$AUTHOR"
             
             if [ ! -f "$TEMPLATE_PATH" ]; then
                 echo -e "${RED}Error: Failed to create template.tex.${NC}"
@@ -529,7 +533,7 @@ create() {
     echo -e "${YELLOW}Creating template file: $TEMPLATE_PATH${NC}"
     
     # Create the template file
-    create_template_file "$TEMPLATE_PATH" "$FOOTER_TEXT"
+    create_template_file "$TEMPLATE_PATH" "$FOOTER_TEXT" "$TITLE" "$AUTHOR"
     
     if [ ! -f "$TEMPLATE_PATH" ]; then
         echo -e "${RED}Error: Failed to create template.tex.${NC}"

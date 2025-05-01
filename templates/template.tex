@@ -35,9 +35,25 @@
 % Setup fancy headers and footers
 \pagestyle{fancy}
 \fancyhf{} % Clear all header and footer fields
-\fancyfoot[C]{Copyright © 2025} % Add copyright footer to center
-\renewcommand{\headrulewidth}{0pt} % Remove header rule
-\renewcommand{\footrulewidth}{0.4pt} % Add footer rule
+
+% Header with author and title (only on pages after the first)
+\fancyhead[L]{\small\textit{$author$}}
+\fancyhead[R]{\small\textit{$title$}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Footer with custom text and page number
+\fancyfoot[C]{Copyright © 2025}
+\fancyfoot[R]{\thepage}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% First page style (no header)
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyfoot[C]{Copyright © 2025}
+  \fancyfoot[R]{\thepage}
+  \renewcommand{\footrulewidth}{0.4pt}
+  \renewcommand{\headrulewidth}{0pt}
+}
 
 % Define \tightlist command used by pandoc
 \providecommand{\tightlist}{%
