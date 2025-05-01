@@ -38,8 +38,7 @@ create_template_file() {
     cat > "$template_path" << EOF
 \\documentclass[12pt]{article}
 \\usepackage[utf8]{inputenc}
-\\usepackage[T1]{fontenc}  % Better font encoding for special characters
-\\usepackage{textcomp}     % Provides additional text symbols
+\\usepackage[T1]{fontenc}
 \\usepackage{geometry}
 \\usepackage{fancyhdr}
 \\usepackage{graphicx}
@@ -47,25 +46,6 @@ create_template_file() {
 \\usepackage{amssymb}
 \\usepackage{hyperref}
 \\usepackage{xcolor}
-\\usepackage{booktabs}
-\\usepackage{longtable}
-\\usepackage{amsthm}
-\\usepackage{fancyvrb}
-\\usepackage{framed}
-\\usepackage{listings}
-\\usepackage{array}
-\\usepackage{enumitem}
-\\usepackage{etoolbox}
-\\usepackage{float}
-\\usepackage{lmodern}
-\\usepackage{textcomp}
-\\usepackage{upquote}
-\\usepackage{microtype}
-
-% Optional packages - check if available
-\\IfFileExists{mhchem.sty}{
-  \\usepackage[version=4]{mhchem}
-}{}
 
 % Set page geometry
 \\geometry{a4paper, margin=1in}
@@ -73,10 +53,27 @@ create_template_file() {
 % Setup fancy headers and footers
 \\pagestyle{fancy}
 \\fancyhf{} % Clear all header and footer fields
-% Footer text: "$footer_text"
-\\fancyfoot[C]{$footer_text} % Add custom footer to center
-\\renewcommand{\\footrulewidth}{0.4pt} % Add footer rule
-\\renewcommand{\\headrulewidth}{0pt} % Remove header rule
+
+% Header with author and title (from second page onward)
+\\makeatletter
+\\fancyhead[L]{\\small\\textit{\\@author}}
+\\fancyhead[R]{\\small\\textit{\\@title}}
+\\makeatother
+\\renewcommand{\\headrulewidth}{0.4pt}
+
+% Footer with custom text and page number
+\\fancyfoot[C]{$footer_text}
+\\fancyfoot[R]{\\thepage}
+\\renewcommand{\\footrulewidth}{0.4pt}
+
+% First page style
+\\fancypagestyle{plain}{
+  \\fancyhf{}
+  \\fancyfoot[C]{$footer_text}
+  \\fancyfoot[R]{\\thepage}
+  \\renewcommand{\\footrulewidth}{0.4pt}
+  \\renewcommand{\\headrulewidth}{0pt}
+}
 
 % Define \\tightlist command used by pandoc
 \\providecommand{\\tightlist}{%
@@ -335,11 +332,31 @@ convert() {
             # Get document details for both template and YAML frontmatter
             echo -e "${YELLOW}Setting up document preferences...${NC}"
             
-            # Get title from filename or ask user
-            DEFAULT_TITLE=$(basename "$INPUT_FILE" .md | sed 's/_/ /g' | sed 's/-/ /g' | sed 's/\b\(.\)/\u\1/g')
-            echo -e "${GREEN}Enter document title [${DEFAULT_TITLE}]:${NC}"
-            read TITLE
-            TITLE=${TITLE:-"$DEFAULT_TITLE"}
+            # Check if the file has a first-level heading (# Title) before asking for title
+            FIRST_HEADING=$(grep -m 1 "^# " "$INPUT_FILE" | sed 's/^# //')
+            
+            if [ -n "$FIRST_HEADING" ]; then
+                # If a first-level heading was found, use it as the default title
+                echo -e "${BLUE}Found title in document: '$FIRST_HEADING'${NC}"
+                echo -e "${GREEN}Enter document title (press Enter to use the found title) [${FIRST_HEADING}]:${NC}"
+                read USER_TITLE
+                
+                if [ -z "$USER_TITLE" ]; then
+                    # User pressed Enter, use the found title
+                    TITLE="$FIRST_HEADING"
+                    echo -e "${GREEN}Using found title: '$FIRST_HEADING'${NC}"
+                else
+                    # User entered a different title, use that instead
+                    TITLE="$USER_TITLE"
+                    echo -e "${GREEN}Using custom title: '$USER_TITLE'${NC}"
+                fi
+            else
+                # Otherwise use filename as default
+                DEFAULT_TITLE=$(basename "$INPUT_FILE" .md | sed 's/_/ /g' | sed 's/-/ /g' | sed 's/\b\(.\)/\u\1/g')
+                echo -e "${GREEN}Enter document title [${DEFAULT_TITLE}]:${NC}"
+                read TITLE
+                TITLE=${TITLE:-"$DEFAULT_TITLE"}
+            fi
             
             # Get author name
             echo -e "${GREEN}Enter author name [$(whoami)]:${NC}"
@@ -380,10 +397,13 @@ convert() {
             if ! grep -q "^---" "$INPUT_FILE"; then
                 echo -e "${YELLOW}Updating $INPUT_FILE with proper YAML frontmatter...${NC}"
                 
+                # Check if the file has a first-level heading (# Title)
+                FIRST_HEADING=$(grep -m 1 "^# " "$INPUT_FILE" | sed 's/^# //')
+                
                 # Create a temporary file with the YAML frontmatter
                 TMP_FILE=$(mktemp)
                 
-                # Add YAML frontmatter
+                # Add YAML frontmatter with the user-specified title
                 cat > "$TMP_FILE" << EOF
 ---
 title: "$TITLE"
@@ -396,8 +416,22 @@ output:
 
 EOF
                 
-                # Append the original content
-                cat "$INPUT_FILE" >> "$TMP_FILE"
+                # If a first-level heading was found and it matches the title we're using,
+                # comment it out to avoid duplication
+                if [ -n "$FIRST_HEADING" ]; then
+                    if [ "$FIRST_HEADING" = "$TITLE" ]; then
+                        # Title is the same as the first heading, comment it out
+                        echo -e "${GREEN}Commenting out the first heading to avoid duplication.${NC}"
+                        sed "0,/^# $FIRST_HEADING/s/^# $FIRST_HEADING/<!-- # $FIRST_HEADING -->/" "$INPUT_FILE" >> "$TMP_FILE"
+                    else
+                        # Title is different from the first heading, keep both
+                        echo -e "${GREEN}Keeping the first heading as it differs from the title.${NC}"
+                        cat "$INPUT_FILE" >> "$TMP_FILE"
+                    fi
+                else
+                    # No first heading, just append the content
+                    cat "$INPUT_FILE" >> "$TMP_FILE"
+                fi
                 
                 # Replace the original file
                 mv "$TMP_FILE" "$INPUT_FILE"
