@@ -1,5 +1,9 @@
 # Generated PDFs
 *.pdf
+template.tex
+
+# Except example.pdf
+!example.pdf
 
 # Temporary LaTeX files
 *.aux
